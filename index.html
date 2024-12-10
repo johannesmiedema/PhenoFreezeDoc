@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Tutorial for classification and training with PhenoFreeze</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Tutorial for classification and training
+with PhenoFreeze</h1>
+
+
+
+<p>This tutorial shows how classification of behavioral phenotypes after
+auditory aversive conditioning (ACC) can be performed using the R
+package PhenoFreeze. This package is designed for classification of
+inbred mice following the experimental conditioning pipeline described
+by Kovlyagina and colleagues[1]. Following AAC, memory retrieval (MR)
+sessions are conducted to measure each animals freezing behavior. In
+each MR session, animals are exposed to the conditioned stimulus (CS)
+after a brief period of adaptation. However, the duration of adaptation
+may differ, the duration of CS must consist of 12 time bins for correct
+classification.</p>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>For installation, devtools must be installed. The following code
+sequence will check for a devtools installation and will install
+PhenoFreeze directly from GitHub[2]:</p>
+<pre><code>if(!require(devtools)){
+    install.packages(&quot;devtools&quot;)
+    library(devtools)
+}
+devtools::install_github(&quot;johannesmiedema/PhenoFreeze&quot;)</code></pre>
+</div>
+<div id="classification" class="section level2">
+<h2>Classification</h2>
+<p>For classification of sustained and phasic freezers, a dataframe must
+be provided, where each row represents the freezing values of an
+individual animals during CS exposure. To demonstrate this, a example
+dataset can be loaded. As seen below, inspecting the dataframe shows
+that there are 36 columns in that dataframe. However, the tone was only
+played during bins 13 to 24. Therefore, the dataframe must be subsetted
+to contain only columns 13:24:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>library(PhenoFreeze)
+
+mydata &lt;- PhenoFreeze::freezingDataset
+head(mydata)</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+<p>Inspecting the dataframe shows that there are 36 columns in that
+dataframe. However, the tone was only played during bins 13 to 24.
+Therefore, the dataframe must be subsetted to contain only columns
+13:24:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>mydata_subsetted &lt;- mydata[,13:24]
+head(mydata_subsetted)</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+<p>This dataframe can now be used for classification. The loaded dataset
+was obtained from female animals during MR session 1. These parameters
+need to be specified to select the correct model for classification:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>myclassification &lt;- PhenoFreeze::classify_freezer(data_MR1 = mydata_subsetted, sex = &quot;female&quot;, MR = 1)
+head(myclassification)</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+<p>The resulting object is a vector, which represents the classified
+phenotype of each animal in the same order as provided by the rows in
+the dataframe. For classification with male animals or different MR
+sessions, the parameters of the functions must be specified accordingly.
+For MR2 classification, the dataframe needs to be specified under the
+data_MR2 variable:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>myclassification_MR2 &lt;- PhenoFreeze::classify_freezer(data_MR2 = mydata_subsetted, sex = &quot;female&quot;, MR = 2)
+</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+</div>
+<div id="retraining-phenofreeze" class="section level2">
+<h2>Retraining PhenoFreeze</h2>
+<p>Apart from classification with pre-trained models, it is also
+possible to retrain the existing models by adding new data. To use the
+retrain_model function, the user must have ggplot2 installed and loaded,
+as this function will also produce plots for evaluation of the trained
+models. Due to the small sizes of the data sets, Monte-Carlo
+Cross-Validation is used to assess the performance of the used models.
+Per default, the number of iterations is 1000, but can be changed with
+the training_iterations parameter within the function call. As an
+example in this tutorial, the loaded dataset from female animals will be
+added to the male MR1 training data for demonstration purposes:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>#ggplot2 needs to be loaded
+library(ggplot2)
+
+
+#Retrain male MR1 models by using the data obtained from the example dataset
+retrainingresults &lt;- PhenoFreeze::retrain_model(new_data = mydata_subsetted, sex = &quot;male&quot;, MR = 1)
+</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+<p>The resulting object can be used to assess the metric plots, metric
+tables and the trained models themself. For example, to investigate the
+plot for the accuracy metric:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>#Obtain Accuracy plot
+Accuracy &lt;- retrainingresults$Accuracy
+
+#Show the Accuracy plot
+Accuracy
+</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+<p>This can be done accordingly for Specificity, Sensitivity, F1 and
+Auroc. The plots can be accessed accordingly with the dollar operator of
+the resulting object of the retrain_model() function. The metrics can
+also be viewed as a dataframe which shows the mean and +/- standard
+deviation. This can be done accordingly:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>#Obtain model performance metrics as a dataframe
+Stats &lt;- retrainingresults$Stats
+Stats
+</code></pre>
+<p>After investigating all metrics, the user can save the
+best-performing model as an RDS object. First, the model needs to
+assigned to a new variable. For example, we will save the radial SVM
+model (RSVM) in this tutorial. The other models can be accessed via the
+dollar operator by specifing “SVM” for the SVM with a linear kernel,
+“RF” for random forest, “Logistic” for the logistic regression model,
+and “LDA” for linear discriminant analysis.</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>mymodel &lt;- retrainingresults$RSVM
+
+#Save as RDS object: the second parameter specifies the name of the saved object and the path 
+saveRDS(mymodel, &quot;mymodel.RDS&quot;)
+</code></pre>
+<p><span class="math inline">\(~\)</span></p>
+<p>After saving the retrained model as an RDS object, this model can now
+be used for custom classification using the classify_freezer() function.
+For this, the model name and path of the saved RDS object needs to be
+specified, as well as the data for custom classification, which needs to
+be specified under the data variable. The other parameters shown before,
+like sex and MR are not needed in this step:</p>
+<p><span class="math inline">\(~\)</span></p>
+<pre><code>newclassification &lt;- PhenoFreeze::classify_freezer(model = &quot;mymodel.RDS&quot;, data = mydata_subsetted)
+</code></pre>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
